@@ -1,23 +1,23 @@
 import logging
 import re
-import auto_changelog
 from datetime import date
 from hashlib import sha256
 from typing import Dict, List, Tuple, Any, Optional
 
 from git import Repo, Commit, TagReference
 
+import auto_changelog
 from auto_changelog.domain_model import RepositoryInterface, Changelog, default_tag_pattern
 
 
 class GitRepository(RepositoryInterface):
     def __init__(
-        self,
-        repository_path,
-        latest_version: Optional[str] = None,
-        skip_unreleased: bool = True,
-        tag_prefix: str = "",
-        tag_pattern: Optional[str] = None,
+            self,
+            repository_path,
+            latest_version: Optional[str] = None,
+            skip_unreleased: bool = True,
+            tag_prefix: str = "",
+            tag_pattern: Optional[str] = None,
     ):
         self.repository = Repo(repository_path)
         self.tag_prefix = tag_prefix
@@ -28,15 +28,16 @@ class GitRepository(RepositoryInterface):
         self._latest_version = latest_version or None
 
     def generate_changelog(
-        self,
-        title: str = "Changelog",
-        description: str = "",
-        remote: str = "origin",
-        issue_pattern: Optional[str] = None,
-        issue_url: Optional[str] = None,
-        diff_url: Optional[str] = None,
-        starting_commit: str = "",
-        stopping_commit: str = "HEAD",
+            self,
+            title: str = "Changelog",
+            description: str = "",
+            remote: str = "origin",
+            issue_pattern: Optional[str] = None,
+            issue_url: Optional[str] = None,
+            diff_url: Optional[str] = None,
+            starting_commit: str = "",
+            stopping_commit: str = "HEAD",
+            ignore_note: str = ""
     ) -> Changelog:
         locallogger = logging.getLogger("repository.generate_changelog")
         issue_url = issue_url or self._issue_from_git_remote_url(remote)
@@ -78,9 +79,12 @@ class GitRepository(RepositoryInterface):
                 locallogger.debug("Adding release '{}' with attributes {}".format(attributes[0], attributes))
                 changelog.add_release(*attributes)
 
-            attributes = self._extract_note_args(commit)
-            locallogger.debug("Adding commit {} with attributes {}".format(sha, attributes))
-            changelog.add_note(*attributes)
+            note_attributes = self._extract_note_args(commit)
+            note = note_attributes[2]
+            locallogger.debug("Adding commit {} with attributes {}".format(sha, note_attributes))
+            ignore_words = ignore_note.split(",")
+            if ignore_note == "" or all(ignore_word not in note for ignore_word in ignore_words):
+                changelog.add_note(*note_attributes)
 
         # create the compare url for each release
         releases = changelog.releases
@@ -160,7 +164,7 @@ class GitRepository(RepositoryInterface):
 
     @staticmethod
     def _init_commit_tags_index(
-        repo: Repo, tag_prefix: str, tag_pattern: Optional[str] = None
+            repo: Repo, tag_prefix: str, tag_pattern: Optional[str] = None
     ) -> Dict[Commit, List[TagReference]]:
         """ Create reverse index """
         reverse_tag_index = {}
