@@ -75,7 +75,7 @@ def validate_template(ctx, param, value):
     is_flag=True,
     help="set logging level to DEBUG",
 )
-@click.option("--ignore-note", help="Ignore commit if there is word from list in commit message", default="")
+@click.option("--ignore", help="Ignore commit if there is word from list in commit message", default="")
 
 def main(
     path_repo,
@@ -97,7 +97,7 @@ def main(
     starting_commit: str,
     stopping_commit: str,
     debug: bool,
-    ignore_note: str,
+    ignore: str,
 ):
     if debug:
         logging.basicConfig(level=logging.DEBUG)
@@ -131,7 +131,7 @@ def main(
         diff_url=diff_url,
         starting_commit=starting_commit,
         stopping_commit=stopping_commit,
-        ignore_note=ignore_note
+        ignore_note=ignore
     )
 
     if stdout:

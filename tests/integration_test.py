@@ -705,8 +705,8 @@ def test_no_debug(caplog, runner, open_changelog):
         ]
     ],
 )
-def test_option_latest_version(runner, open_changelog):
-    result = runner.invoke(main, ["--latest-version", "1.0.0", "--ignore-note", "#2,#3"])
+def test_commit_ignoring(runner, open_changelog):
+    result = runner.invoke(main, ["--latest-version", "1.0.0", "--ignore", "#2,#3"])
     assert result.exit_code == 0, result.stderr
     assert result.output == ""
     changelog = open_changelog().read()
@@ -726,7 +726,7 @@ def test_option_latest_version(runner, open_changelog):
         ]
     ],
 )
-def test_option_latest_version_with_option_unreleased (runner, open_changelog):
+def test_option_latest_version_with_option_unreleased(runner, open_changelog):
     result = runner.invoke(main, ["--unreleased", "--latest-version", "1.0.0"])
     assert result.exit_code == 0, result.stderr
     assert result.output == ""
