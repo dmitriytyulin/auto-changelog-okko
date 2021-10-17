@@ -1,9 +1,9 @@
 import logging
 import os
-import pytest
 import subprocess
 from datetime import date
 
+import pytest
 from click.testing import CliRunner
 
 from auto_changelog.__main__ import main
@@ -694,61 +694,27 @@ def test_no_debug(caplog, runner, open_changelog):
     assert "Logging level has been set to DEBUG" not in caplog.text
 
 
+###
+
 @pytest.mark.parametrize(
     "commands",
     [
         [
-            'git commit --allow-empty -q -m "feat: Add file #1"',
             'git commit --allow-empty -q -m "feat: Add file #2"',
-            'git commit --allow-empty -q -m "feat: Add file #3"',
+            'git commit --allow-empty -q -m "feat(Add file #1)"',
             "git remote add origin https://github.com/Michael-F-Bryan/auto-changelog.git",
         ]
     ],
 )
-def test_option_latest_version(runner, open_changelog):
-    result = runner.invoke(main, ["--latest-version", "1.0.0", "--ignore-note", "#2,#3"])
-    assert result.exit_code == 0, result.stderr
-    assert result.output == ""
-    changelog = open_changelog().read()
-    assert_content = (
-        f"# Changelog\n\n## 1.0.0 ({date.today().strftime('%Y-%m-%d')})\n\n#### New Features\n\n"
-        f"* Add file [#1](https://github.com/Michael-F-Bryan/auto-changelog/issues/1)\n"
-    )
-    assert changelog == assert_content
-
-
-@pytest.mark.parametrize(
-    "commands",
-    [
-        [
-            'git commit --allow-empty -q -m "feat: Add file #1"',
-            "git remote add origin https://github.com/Michael-F-Bryan/auto-changelog.git",
-        ]
-    ],
-)
-def test_option_latest_version_with_option_unreleased (runner, open_changelog):
-    result = runner.invoke(main, ["--unreleased", "--latest-version", "1.0.0"])
+def test_context_of_commit_in_braces(runner, open_changelog):
+    result = runner.invoke(main, ["--unreleased"])
     assert result.exit_code == 0, result.stderr
     assert result.output == ""
     changelog = open_changelog().read()
     print(changelog)
     assert_content = (
-        f"# Changelog\n\n## 1.0.0 ({date.today().strftime('%Y-%m-%d')})\n\n#### New Features\n\n"
+        f"# Changelog\n\n## Unreleased ({date.today().strftime('%Y-%m-%d')})\n\n#### New Features\n\n"
         f"* Add file [#1](https://github.com/Michael-F-Bryan/auto-changelog/issues/1)\n"
+        f"* Add file [#2](https://github.com/Michael-F-Bryan/auto-changelog/issues/2)\n"
     )
     assert changelog == assert_content
-    assert "## Unreleased" not in changelog
-
-
-@pytest.mark.parametrize(
-    "commands",
-    [
-        [
-            'git commit --allow-empty -q -m "feat: Add file #1"',
-            "git remote add origin https://github.com/Michael-F-Bryan/auto-changelog.git",
-        ]
-    ],
-)
-def test_wrong_option(runner, open_changelog):
-    result = runner.invoke(main, ["--released"])
-    assert result.exit_code != 0, result.stderr
