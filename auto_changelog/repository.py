@@ -221,8 +221,13 @@ class GitRepository(RepositoryInterface):
         if match:
             type_, scope, description, body_footer = match.groups(default="")
         else:
-            locallogger = logging.getLogger("repository._parse_conventional_commit")
-            locallogger.debug("Commit message did not match expected pattern: {}".format(message))
+            match = re.match(r"^(\w+)\s?\((.*)\)$", message.strip())
+            if match:
+                type_, description = match.groups(default="")
+            else:
+                locallogger = logging.getLogger("repository._parse_conventional_commit")
+                locallogger.debug("Commit message did not match expected pattern: {}".format(message))
+
         if scope:
             scope = scope[1:-1]
         if body_footer:
